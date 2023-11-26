@@ -1,0 +1,49 @@
+version: "3"
+
+services:
+  localstack:
+    container_name: lms-localstack
+    image: localstack/localstack:latest
+    environment:
+      - AWS_DEFAULT_REGION=ap-south-1
+      - EDGE_PORT=4566
+      - SERVICES=sqs,s3
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    ports:
+      - '4566:4566'
+
+  awscli:
+    container_name: localstack-awscli
+    depends_on:
+      - localstack
+    image: amazon/aws-cli
+    volumes:
+      - ./localstack-entrypoint.sh:/localstack-entrypoint.sh
+      - ./s3:/s3
+    entrypoint: [ "/bin/bash", "/localstack-entrypoint.sh" ]
+    environment:
+      - AWS_SECRET_ACCESS_KEY=foo
+      - AWS_ACCESS_KEY_ID=bar
+
+## to be uncommented with changes
+#  lms:
+#    image: lead-management-service
+#    container_name: "LMS"
+#    ports:
+#      - "8058:8058"
+#
+#  lmsmongodb:
+#    image: mongo:latest
+#    volumes:
+#      - type: volume
+#        source: db-data
+#        target: /data
+#        volume:
+#          nocopy: true
+#    container_name: "lmsmongodb"
+#    ports:
+#      - "27017:27017"
+#
+#volumes:
+#  db-data:
+#    external: false
